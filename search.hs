@@ -72,32 +72,48 @@ ida = ida' 1
 -- The type parameter b represents the type of the cost/heuristic, usually
 -- Int or a floating point type.
 
--- data OpenListElement a b = OpenListElement {
-      
+data OpenListNode a b = 
+    OpenListNode {
+      state :: a
+      g_value :: b
+      h_value :: b
+    }
+
 -- type OpenList a b = (Map.Map
+
+emptyOL :: OpenList -> Bool
+addToOL :: (a,b) -> OpenList -> OpenList
+replaceOnOL :: a -> (a,b) -> OpenList -> OpenList
+
+memberOfCL :: a -> ClosedList -> Bool
+addToCL :: a -> ClosedList
+
 
 astar :: forall a b. Ord b => Int -> (a -> [(b,a)]) -> a -> (a -> b) -> Maybe [a]
 astar maxdepth succ s0 h =
     Nothing
     where
       astar' :: Int -> OpenList -> ClosedList -> Maybe [a]
-      astar' d open closed | d > maxdepth = Nothing
-                           | emptyOL open = Nohting
-                           | h node == 0  = Just build_solution
-                           | otherwise =
-                               let newnodes = filter (notOnCL closed) (succ node)
-                                   open' = foldl addToOpen open newnodes
-                                   closed' = addToCL closed node
-                               in
-                                 astar' (d+1) open' closed'
-                               where
-                                 addToOpen :: OpenList -> Node -> OpenList
-                                 addToOpen open node =
-                                     if onOL open node then
-                                         if node is better then
-                                             addNode (removeNode open oldnode) node
-                                         else
-                                             open
-                                     else
-                                         addNode open node
+      astar' d open closed 
+          let node = getFirstOL open
+          in                   
+            | d > maxdepth = Nothing
+            | emptyOL open = Nohting
+            | h node == 0  = Just build_solution
+            | otherwise =
+                let newnodes = filter (not . (`memberOfCL` closed)) (succ node)
+                               open' = foldl addToOpen open newnodes
+                               closed' = addToCL closed node
+                in
+                  astar' (d+1) open' closed'
+                  where
+                    addToOpen :: OpenList -> Node -> OpenList
+                    addToOpen open node =
+                        if onOL open node then
+                            if node is better then
+                                replaceOnOL oldnode node open
+                            else
+                                open
+                        else
+                            addToOL open node
 
