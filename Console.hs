@@ -3,6 +3,7 @@ module Console where
 import CCS
 import Parser
 import Semantics
+import qualified Search
 
 import Text.ParserCombinators.Parsec
 
@@ -45,6 +46,7 @@ data Command
     | ShowSuccessors Process
     | Parse Process
     | Test HMLFormula Process
+    | Reachable HMLFormula Process
     | Quit
 
 cmdParser :: Parser [Command]
@@ -72,6 +74,11 @@ cmdParser = do whiteSpace
                            ; f <- hmlFormula
                            ; p <- process
                            ; return $ Test f p
+                           },
+                        do { symbol "reachable"
+                           ; f <- hmlFormula
+                           ; p <- process
+                           ; return $ Reachable f p
                            },
                         do { (symbol "quit") <|> (symbol "exit")
                            ; return Quit
@@ -119,6 +126,19 @@ evalCommand (Parse p) = shellPutStrLn $ showCCS p
 evalCommand (Test f p) =
     do st <- getShellSt
        shellPutStrLn $ show (hmlEvaluate (procDefs st) f p)
+
+evalCommand (Reachable f p) =
+    do
+      st <- getShellSt
+      let initial = (Tau,p)
+          heuristic (_,proc) = if hmlEvaluate (procDefs st) f proc then
+                                   0
+                               else
+                                   1
+          succGen (_,proc) = map ((,) 1) $ ccsSucc (procDefs st) proc
+      case Search.astar succGen initial heuristic of
+        Just [(a,proc)] -> shellPutStrLn $ "Found: " ++ (showCCS proc)
+        Nothing -> shellPutStrLn "Not found"
 
 evalCommand Quit =
     shellSpecial ShellExit

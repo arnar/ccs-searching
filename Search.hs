@@ -56,14 +56,16 @@ dfs maxdepth succGenerator start goaltest =
             firstJust (_:xs) = firstJust xs
 
 
-ida :: forall a. Int -> (a -> [a]) -> a -> (a -> Bool) -> Maybe [a]
-ida = ida' 1
-      where
-        ida' d maxdepth succ s0 goal
-            | d > maxdepth = Nothing
-            | otherwise = case dfs d succ s0 goal of
-                            Just xs -> Just xs
-                            Nothing -> ida' (d+1) maxdepth succ s0 goal
+-- Iterative deepening DFS
+
+iddfs :: forall a. Int -> (a -> [a]) -> a -> (a -> Bool) -> Maybe [a]
+iddfs = iddfs' 1
+    where
+      iddfs' d maxdepth succ s0 goal
+          | d > maxdepth = Nothing
+          | otherwise = case dfs d succ s0 goal of
+                          Just xs -> Just xs
+                          Nothing -> iddfs' (d+1) maxdepth succ s0 goal
 
 
 
@@ -129,13 +131,7 @@ lookupOL :: (Ord a) => a -> OpenList a -> Maybe Int
 lookupOL state (pq,members) = Map.lookup state members
 
 getFirstOL :: OpenList a -> OpenListNode a
---getFirstOL = head . snd . Map.findMin . fst
-getFirstOL (pq,members) = let xs = snd $ Map.findMin pq
-                          in
-                            if null xs then
-                                error "gaah"
-                            else
-                                head xs
+getFirstOL = head . snd . Map.findMin . fst
 
 type ClosedList a = Set.Set a
 

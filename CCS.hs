@@ -25,7 +25,7 @@ data Process
     | Parallel Process Process
     | Rename Process Renaming
     | Restrict Process Restriction
-    deriving (Eq, Show)
+    deriving (Eq, Show, Ord)
 
 -- Constant for the null process
 nullProcess :: Process

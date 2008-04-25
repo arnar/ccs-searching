@@ -44,7 +44,7 @@ ccsSucc defs (Rename p r) = nub $ map ren $ ccsSucc defs p
 -- Rule CON
 ccsSucc defs (Name pn) = case Map.lookup pn defs of
                            Just p  -> ccsSucc defs p
-                           Nothing -> [] -- TODO raise error?
+                           Nothing -> error "No process definiton for name"
 
 
 -- HML evaluation
@@ -56,18 +56,9 @@ hmlEvaluate defs (HMLAnd f1 f2) p = (hmlEvaluate defs f1 p) && (hmlEvaluate defs
 hmlEvaluate defs (HMLOr  f1 f2) p = (hmlEvaluate defs f1 p) || (hmlEvaluate defs f2 p)
 hmlEvaluate defs (HMLBox a f) p = 
     all (hmlEvaluate defs f) (map snd (filter ((== a) . fst) $ ccsSucc defs p))
-{-(catMaybes $ map onlya $ ccsSucc defs p)
-                                  where
-                                    onlya (action,proc)
-                                        | a == action = Just proc
-                                        | otherwise = Nothing -}
 hmlEvaluate defs (HMLDiamond a f) p = 
     any (hmlEvaluate defs f) (map snd (filter ((== a) . fst) $ ccsSucc defs p))
-{-(catMaybes $ map onlya $ ccsSucc defs p)
-                                      where
-                                        onlya (action,proc)
-                                            | a == action = Just proc
-                                            | otherwise = Nothing -}
+
 
 -- Helper functions
 
