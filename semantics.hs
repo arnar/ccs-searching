@@ -54,17 +54,20 @@ hmlEvaluate _ HMLTrue _ = True
 hmlEvaluate _ HMLFalse _ = False
 hmlEvaluate defs (HMLAnd f1 f2) p = (hmlEvaluate defs f1 p) && (hmlEvaluate defs f2 p)
 hmlEvaluate defs (HMLOr  f1 f2) p = (hmlEvaluate defs f1 p) || (hmlEvaluate defs f2 p)
-hmlEvaluate defs (HMLBox a f) p = all (hmlEvaluate defs f) (catMaybes $ map onlya $ ccsSucc defs p)
+hmlEvaluate defs (HMLBox a f) p = 
+    all (hmlEvaluate defs f) (map snd (filter ((== a) . fst) $ ccsSucc defs p))
+{-(catMaybes $ map onlya $ ccsSucc defs p)
                                   where
                                     onlya (action,proc)
                                         | a == action = Just proc
-                                        | otherwise = Nothing
-hmlEvaluate defs (HMLDiamond a f) p = any (hmlEvaluate defs f) (catMaybes $ map onlya $ ccsSucc defs p)
+                                        | otherwise = Nothing -}
+hmlEvaluate defs (HMLDiamond a f) p = 
+    any (hmlEvaluate defs f) (map snd (filter ((== a) . fst) $ ccsSucc defs p))
+{-(catMaybes $ map onlya $ ccsSucc defs p)
                                       where
                                         onlya (action,proc)
                                             | a == action = Just proc
-                                            | otherwise = Nothing
-
+                                            | otherwise = Nothing -}
 
 -- Helper functions
 
