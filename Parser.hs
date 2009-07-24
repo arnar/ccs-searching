@@ -37,7 +37,9 @@ processName = do c <- upper
               <?> "a process name"
 
 action :: Parser Action
-action = do s <- lexeme signalName
+action = do { try (symbol "tau") ; return Tau }
+         <|>
+         do s <- lexeme signalName
             return (Input s)
          <|>
          do symbol "^"

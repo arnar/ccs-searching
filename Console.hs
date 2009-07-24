@@ -12,6 +12,7 @@ import qualified Data.Map as Map
 import System.Console.Shell
 import System.Console.Shell.ShellMonad
 import System.Console.Shell.Backend.Readline
+--import System.Console.Shell.Backend.Basic
 
 import Control.Monad(foldM)
 
@@ -38,6 +39,7 @@ ccsShell init = do
           , secondaryPrompt = Just (\st -> return "...> ")
           }
   runShell desc readlineBackend init
+  --runShell desc basicBackend init
 
 -- Cmd line parser and evaluation
 data Command
